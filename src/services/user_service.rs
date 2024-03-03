@@ -10,7 +10,11 @@ impl UserService {
         UserService { user_repository }
     }
 
-    pub fn get_user(&self, id: i32) -> Option<User> {
+    pub fn get_user(&self, id: i32) -> Result<User, String> {
         self.user_repository.get_user(id)
+    }
+
+    pub fn create_user(&self, user: User) -> Result<User, String> {
+        self.user_repository.create_user(user)
     }
 }

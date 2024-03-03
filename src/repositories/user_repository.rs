@@ -7,8 +7,11 @@ impl UserRepository {
         UserRepository {}
     }
 
-    pub fn get_user(&self, id: i32) -> Option<User> {
-        // ここでデータベースや外部APIからデータを取得します
-        Some(User::new(id, String::from("sample")))
+    pub fn get_user(&self, id: i32) -> Result<User, String> {
+        todo!();
+    }
+
+    pub fn create_user(&self, user: User) -> Result<User, String> {
+        todo!();
     }
 }
