@@ -12,7 +12,7 @@ services:
     container_name: "rust01-api"
     env_file: .env
     volumes:
-      - .:/app
+      - .:/usr/src/app
     tty: true
 
   rust01-db:
