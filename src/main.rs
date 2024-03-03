@@ -1,11 +1,13 @@
 #[macro_use]
 extern crate rocket;
 
+mod fairings;
 mod handlers;
 mod models;
 mod repositories;
 mod services;
 
+use fairings::cors::{options, CORS};
 use handlers::{Response, SuccessResponse};
 use rocket::http::Status;
 
@@ -36,14 +38,18 @@ fn index() -> Response<String> {
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/", routes![index]).mount(
-        "/users",
-        routes![
-            handlers::user::get_user_one,
-            handlers::user::get_user_list,
-            handlers::user::create_user,
-            handlers::user::update_user,
-            handlers::user::delete_user
-        ],
-    )
+    rocket::build()
+        .attach(CORS)
+        .mount("/", routes![options])
+        .mount("/", routes![index])
+        .mount(
+            "/users",
+            routes![
+                handlers::user::get_user_one,
+                handlers::user::get_user_list,
+                handlers::user::create_user,
+                handlers::user::update_user,
+                handlers::user::delete_user
+            ],
+        )
 }
