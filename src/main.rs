@@ -1,11 +1,10 @@
 #[macro_use]
 extern crate rocket;
 
+mod db;
+mod entities;
 mod fairings;
 mod handlers;
-mod models;
-mod repositories;
-mod services;
 
 use fairings::cors::{options, CORS};
 use handlers::{Response, SuccessResponse};
@@ -37,19 +36,23 @@ fn index() -> Response<String> {
 }
 
 #[launch]
-fn rocket() -> _ {
+async fn rocket() -> _ {
+    let config = AppConfig::default();
+
+    let db = db::connect(&config).await.unwrap();
     rocket::build()
         .attach(CORS)
+        .manage(db)
         .mount("/", routes![options])
         .mount("/", routes![index])
         .mount(
             "/users",
             routes![
-                handlers::user::get_user_one,
+                // handlers::user::get_user_one,
                 handlers::user::get_user_list,
                 handlers::user::create_user,
-                handlers::user::update_user,
-                handlers::user::delete_user
+                // handlers::user::update_user,
+                // handlers::user::delete_user
             ],
         )
 }
