@@ -1,3 +1,6 @@
+use chrono::{DateTime, Utc};
+use std::time::{SystemTime, UNIX_EPOCH};
+
 use rocket::{
     http::Status,
     serde::{json::Json, Deserialize, Serialize},
@@ -5,7 +8,7 @@ use rocket::{
 };
 use sea_orm::*;
 
-use super::{Response, SuccessResponse};
+use super::{ErrorResponse, Response, SuccessResponse};
 
 use crate::entities::{prelude::*, users};
 
@@ -49,13 +52,46 @@ pub async fn create_user(
     )))
 }
 
-// #[put("/<id>", data = "<req_update_user>")]
-// pub async fn update_user(
-//     id: u32,
-//     req_update_user: Json<ReqCreateUpdateUser>,
-// ) -> Response<Json<ResUser>> {
-//     todo!()
-// }
+#[put("/<id>", data = "<req_update_user>")]
+pub async fn update_user(
+    db: &State<DatabaseConnection>,
+    id: u32,
+    req_update_user: Json<ReqCreateUpdateUser>,
+) -> Response<Json<ResUser>> {
+    let db = db as &DatabaseConnection;
+
+    let mut user: users::ActiveModel = match Users::find_by_id(id).one(db).await? {
+        Some(a) => a.into(),
+        None => {
+            return Err(ErrorResponse((
+                Status::NotFound,
+                "No user with the specified ID.".to_string(),
+            )))
+        }
+    };
+
+    user.name = Set(req_update_user.name.to_owned());
+    user.age = Set(req_update_user.age as i64);
+
+    user.updated_at = Set(DateTime::<Utc>::from(
+        UNIX_EPOCH
+            + SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .expect("Time went backwards"),
+    )
+    .naive_utc());
+
+    let user = user.update(db).await?;
+
+    Ok(SuccessResponse((
+        Status::Created,
+        Json(ResUser {
+            id: user.id as i32,
+            name: user.name,
+            age: user.age as i32,
+        }),
+    )))
+}
 
 // #[delete("/<id>")]
 // pub async fn delete_user(id: u32) -> Response<String> {

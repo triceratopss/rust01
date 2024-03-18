@@ -51,7 +51,7 @@ async fn rocket() -> _ {
                 // handlers::user::get_user_one,
                 handlers::user::get_user_list,
                 handlers::user::create_user,
-                // handlers::user::update_user,
+                handlers::user::update_user,
                 // handlers::user::delete_user
             ],
         )
