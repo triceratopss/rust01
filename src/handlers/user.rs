@@ -129,7 +129,28 @@ pub async fn get_user_list(db: &State<DatabaseConnection>) -> Response<Json<ResG
     )))
 }
 
-// #[get("/<id>")]
-// pub async fn get_user_one(id: u32) -> Response<Json<ResUser>> {
-//     todo!()
-// }
+#[get("/<id>")]
+pub async fn get_user_one(db: &State<DatabaseConnection>, id: u32) -> Response<Json<ResUser>> {
+    let db = db as &DatabaseConnection;
+
+    let user = Users::find_by_id(id).one(db).await?;
+
+    let user = match user {
+        Some(u) => u,
+        None => {
+            return Err(super::ErrorResponse((
+                Status::NotFound,
+                "Cannot find a user with the specified ID.".to_string(),
+            )))
+        }
+    };
+
+    Ok(SuccessResponse((
+        Status::Ok,
+        Json(ResUser {
+            id: user.id as i32,
+            name: user.name,
+            age: user.age as i32,
+        }),
+    )))
+}

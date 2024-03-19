@@ -48,7 +48,7 @@ async fn rocket() -> _ {
         .mount(
             "/users",
             routes![
-                // handlers::user::get_user_one,
+                handlers::user::get_user_one,
                 handlers::user::get_user_list,
                 handlers::user::create_user,
                 handlers::user::update_user,
