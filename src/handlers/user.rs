@@ -93,10 +93,34 @@ pub async fn update_user(
     )))
 }
 
-// #[delete("/<id>")]
-// pub async fn delete_user(id: u32) -> Response<String> {
-//     todo!()
-// }
+#[delete("/<id>")]
+pub async fn delete_user(db: &State<DatabaseConnection>, id: u32) -> Response<String> {
+    let db = db as &DatabaseConnection;
+
+    let mut user: users::ActiveModel = match Users::find_by_id(id).one(db).await? {
+        Some(a) => a.into(),
+        None => {
+            return Err(ErrorResponse((
+                Status::NotFound,
+                "No user with the specified ID.".to_string(),
+            )))
+        }
+    };
+
+    user.deleted_at = Set(Some(
+        DateTime::<Utc>::from(
+            UNIX_EPOCH
+                + SystemTime::now()
+                    .duration_since(UNIX_EPOCH)
+                    .expect("Time went backwards"),
+        )
+        .naive_utc(),
+    ));
+
+    user.update(db).await?;
+
+    Ok(SuccessResponse((Status::Ok, "User deleted.".to_string())))
+}
 
 #[derive(Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
@@ -110,6 +134,7 @@ pub async fn get_user_list(db: &State<DatabaseConnection>) -> Response<Json<ResG
     let db = db as &DatabaseConnection;
 
     let users = Users::find()
+        .filter(users::Column::DeletedAt.is_null())
         .all(db)
         .await?
         .iter()
@@ -133,7 +158,10 @@ pub async fn get_user_list(db: &State<DatabaseConnection>) -> Response<Json<ResG
 pub async fn get_user_one(db: &State<DatabaseConnection>, id: u32) -> Response<Json<ResUser>> {
     let db = db as &DatabaseConnection;
 
-    let user = Users::find_by_id(id).one(db).await?;
+    let user = Users::find_by_id(id)
+        .filter(users::Column::DeletedAt.is_null())
+        .one(db)
+        .await?;
 
     let user = match user {
         Some(u) => u,
