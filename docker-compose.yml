@@ -5,6 +5,8 @@ services:
       - rust01-db
     ports:
       - 9090:8000
+    networks:
+      - common-network
     build:
       context: .
       target: dev
@@ -19,6 +21,8 @@ services:
     image: postgres:16-bookworm
     container_name: rust01-db
     restart: unless-stopped
+    networks:
+      - common-network
     ports:
       - 15433:5432
     volumes:
@@ -39,6 +43,8 @@ services:
         condition: service_healthy
     build:
       context: db-migration
+    networks:
+      - common-network
     container_name: rust01-db-migration
     environment:
       DB_HOST: ${DB_HOST}
@@ -53,3 +59,7 @@ services:
 
 volumes:
   db-data:
+
+networks:
+  common-network:
+    external: true
