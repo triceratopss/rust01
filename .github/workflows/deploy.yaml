@@ -1,0 +1,39 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  ARTIFACT_HOST: ${{ vars.ARTIFACT_HOST }}
+  APP_IMAGE_NAME: ${{ vars.ARTIFACT_HOST }}/${{ secrets.GCP_PROJECT_ID }}/${{ vars.ARTIFACT_REPO }}/${{ vars.SERVICE_NAME }}:${{ github.sha }}
+  MIGRATION_IMAGE_NAME: ${{ vars.ARTIFACT_HOST }}/${{ secrets.GCP_PROJECT_ID }}/${{ vars.ARTIFACT_REPO }}/${{ vars.MIGRATION_SERVICE_NAME }}:${{ github.sha }}
+
+jobs:
+  build-and-push:
+    name: Build and Push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Configure docker for artifact registry
+        run: |
+          gcloud auth configure-docker ${{ env.ARTIFACT_HOST }}
+
+      - name: Build and push App image
+        run: |
+          docker build -t $APP_IMAGE_NAME .
+          docker push $APP_IMAGE_NAME
+
+      - name: Build and push Migration image
+        run: |
+          docker build -t $MIGRATION_IMAGE_NAME ./db-migration
+          docker push $MIGRATION_IMAGE_NAME
