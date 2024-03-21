@@ -34,7 +34,7 @@ jobs:
       - name: Build and push App image
         uses: docker/build-push-action@v5
         with:
-          push: true
+          push: false
           tags: ${{ env.APP_IMAGE_NAME }}
           target: runtime
           platforms: linux/amd64
