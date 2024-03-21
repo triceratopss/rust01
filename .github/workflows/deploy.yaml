@@ -28,12 +28,18 @@ jobs:
         run: |
           gcloud auth configure-docker ${{ env.ARTIFACT_HOST }}
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Build and push App image
-        run: |
-          docker build -t $APP_IMAGE_NAME .
-          docker push $APP_IMAGE_NAME
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: ${{ env.APP_IMAGE_NAME }}
 
       - name: Build and push Migration image
-        run: |
-          docker build -t $MIGRATION_IMAGE_NAME ./db-migration
-          docker push $MIGRATION_IMAGE_NAME
+        uses: docker/build-push-action@v5
+        with:
+          context: ./db-migration
+          push: true
+          tags: ${{ env.MIGRATION_IMAGE_NAME }}
