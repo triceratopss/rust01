@@ -38,9 +38,9 @@ jobs:
           tags: ${{ env.APP_IMAGE_NAME }}
           target: runtime
 
-      - name: Build and push Migration image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./db-migration
-          push: true
-          tags: ${{ env.MIGRATION_IMAGE_NAME }}
+      # - name: Build and push Migration image
+      #   uses: docker/build-push-action@v5
+      #   with:
+      #     context: ./db-migration
+      #     push: true
+      #     tags: ${{ env.MIGRATION_IMAGE_NAME }}
