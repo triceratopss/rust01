@@ -43,6 +43,8 @@ jobs:
           tags: ${{ env.IMAGE_NAME }}
           target: runtime
           platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       # - name: Build and push Migration image
       #   uses: docker/build-push-action@v5
